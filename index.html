@@ -1,13 +1,47 @@
-const db = globalThis.__B44_DB__ || { auth:{ isAuthenticated: async()=>false, me: async()=>null }, entities:new Proxy({}, { get:()=>({ filter:async()=>[], get:async()=>null, create:async()=>({}), update:async()=>({}), delete:async()=>({}) }) }), integrations:{ Core:{ UploadFile:async()=>({ file_url:'' }) } } };
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="https://db.com/logo_v2.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="manifest" href="/manifest.json" />
-    <title>Anything & Everything</title>
+    <title>Pan-Optic</title>
+    <script>
+      window.getAccessToken = window.getAccessToken || function() { return 'local-dev-token'; };
+      globalThis.getPublicSettings = globalThis.getPublicSettings || async function() { return {}; };
+      
+      const mockHandler = {
+        get: (target, prop) => {
+          if (prop === 'list' || prop === 'filter') {
+            return async () => [
+              { id: '1', name: 'Premium Backpack', price: '$89', image: 'https://unsplash.com' },
+              { id: '2', name: 'Wireless Headphones', price: '$149', image: 'https://unsplash.com' },
+              { id: '3', name: 'Minimalist Watch', price: '$199', image: 'https://unsplash.com' },
+              { id: '4', name: 'Leather Wallet', price: '$45', image: 'https://unsplash.com' }
+            ];
+          }
+          if (prop === 'get' || prop === 'me') return async () => null;
+          if (prop === 'isAuthenticated') return async () => false;
+          if (prop === 'getPublicSettings') return async () => ({});
+          if (prop === 'create' || prop === 'update' || prop === 'delete') return async () => ({});
+          return new Proxy({}, mockHandler);
+        }
+      };
+
+      globalThis.__B44_DB__ = globalThis.__B44_DB__ || new Proxy({
+        auth: new Proxy({}, mockHandler),
+        entities: new Proxy({}, mockHandler),
+        integrations: { Core: { UploadFile: async () => ({ file_url: 'https://unsplash.com' }) } }
+      }, mockHandler);
+
+      globalThis.db = globalThis.__B44_DB__;
+    </script>
+    <style>
+      /* Enforces a safe fallback configuration if any broken image elements are detected */
+      img { 
+        min-height: 150px; 
+        background: #f3f4f6; 
+        object-fit: cover;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
